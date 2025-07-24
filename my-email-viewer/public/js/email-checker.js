@@ -514,6 +514,17 @@ function displayResult(result) {
   resultContainer.classList.remove("hidden");
 }
 
+// show thong bao
+function showMessage(message, duration = 2000) {
+  const notification = document.getElementById("notification");
+  notification.textContent = message;
+  notification.style.display = "block";
+
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, duration);
+}
+
 // ==== Setup sự kiện ====
 function setupEmailChecker() {
   const checkBtn = document.getElementById("check-email-btn");
@@ -539,7 +550,7 @@ function setupEmailChecker() {
       : false;
 
     if (!fromEmail || !subject || !content) {
-      alert("Vui lòng điền đầy đủ thông tin email");
+      showMessage("Vui lòng điền đầy đủ thông tin email");
       return;
     }
 
