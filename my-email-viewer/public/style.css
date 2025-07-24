@@ -1,0 +1,184 @@
+/* ---- Navigation ---- */
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 0;
+  background: #fff; /* màu dark navy */
+}
+
+nav button {
+  background-color: #fff;
+  color: #f8fafc;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+nav button:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+nav button:active {
+  transform: translateY(0);
+}
+
+/* ---- Tabs ---- */
+.tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 12px;
+  padding-bottom: 4px;
+}
+
+.tab-btn {
+  background-color: #f1f5f9;
+  padding: 8px 20px;
+  border-radius: 6px 6px 0 0;
+  border: none;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.tab-btn:hover {
+  background: #e2e8f0;
+}
+.tab-btn.active {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+/* ---- Table Wrapper ---- */
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+  /* chỉ chiếm 70% */
+  margin: 0 auto; /* căn giữa */
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ---- Email Table ---- */
+.email-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.email-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.email-table tbody td {
+  padding: 10px 8px;
+  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+  height: 48px; /* Chiều cao cố định cho mỗi dòng */
+}
+.email-table tbody tr:hover {
+  background-color: #f1f5f9;
+  transition: background-color 0.2s ease;
+}
+
+.email-table tbody tr {
+  transition: all 0.2s ease;
+}
+.tab-btn {
+  transition: all 0.3s ease;
+}
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- Fixed Table (Category) ---- */
+.table-fixed {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table-fixed th,
+.table-fixed td {
+  padding: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.table-fixed th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* ---- Pagination ---- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 4px;
+}
+.pagination button {
+  min-width: 32px;
+  padding: 5px 10px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  background: #f1f5f9;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.pagination button:hover {
+  background: #e2e8f0;
+}
+.pagination button.active {
+  background: #1e293b;
+  color: #fff;
+}
+
+/* chatbot-messages */
+.message {
+  max-width: 80%;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  word-wrap: break-word;
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: #e0f7fa; /* xanh nhạt */
+  color: #000;
+}
+
+.bot-message {
+  align-self: flex-start;
+  background-color: #f1f1f1;
+  color: #000;
+}
+
+#chatbot-messages {
+  display: flex;
+  flex-direction: column;
+}

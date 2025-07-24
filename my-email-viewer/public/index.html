@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- nav -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex-shrink-0">
+            <a
+              href="#/"
+              class="flex items-center space-x-2 text-2xl font-bold text-blue-600"
+            >
+              <i data-lucide="shield"></i>
+              <span>AnToanMang.vn</span>
+            </a>
+          </div>
+          <div class="hidden md:block">
+            <nav class="ml-10 flex items-baseline space-x-4">
+              <a
+                href="#checker"
+                class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >Công cụ Kiểm tra</a
+              >
+              <a
+                href="#knowledge"
+                class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >Thư viện Kiến thức</a
+              >
+              <a
+                href="#alerts"
+                class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >Cảnh báo Cộng đồng</a
+              >
+              <a
+                href="#report"
+                class="text-gray-600 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >Báo cáo Lừa đảo</a
+              >
+            </nav>
+          </div>
+          <div class="md:hidden flex items-center">
+            <button
+              title="none"
+              id="mobile-menu-button"
+              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-blue-500 focus:outline-none"
+            >
+              <i data-lucide="menu" id="mobile-menu-open-icon"></i>
+              <i data-lucide="x" id="mobile-menu-close-icon" class="hidden"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="mobile-menu" class="md:hidden hidden">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <a
+            href="#checker"
+            class="text-gray-600 hover:bg-blue-500 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
+            >Công cụ Kiểm tra</a
+          >
+          <a
+            href="#knowledge"
+            class="text-gray-600 hover:bg-blue-500 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
+            >Thư viện Kiến thức</a
+          >
+          <a
+            href="#alerts"
+            class="text-gray-600 hover:bg-blue-500 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
+            >Cảnh báo Cộng đồng</a
+          >
+          <a
+            href="#report"
+            class="text-gray-600 hover:bg-blue-500 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
+            >Báo cáo Lừa đảo</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <section id="checker" class="md:pb-20 bg-gray-50 min-h-[calc(100vh-80px)]">
+      <div class="pt-[60px] container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="mt-[60px] text-4xl md:text-4xl font-bold text-gray-800">
+          Kiểm tra An toàn Trực tuyến
+        </h1>
+        <p class="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+          Nhập link, email, hoặc số điện thoại để hệ thống AI của chúng tôi phân
+          tích và cảnh báo rủi ro.
+        </p>
+
+        <div class="max-w-3xl mx-auto mt-8 bg-white p-6 rounded-lg shadow-lg">
+          <div class="border-b border-gray-200">
+            <nav
+              id="checker-tabs"
+              class="-mb-px flex space-x-1 md:space-x-4"
+              aria-label="Tabs"
+            >
+              <button
+                data-tab="link"
+                class="checker-tab border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 md:px-4 border-b-2 font-medium text-sm md:text-base flex items-center transition-all"
+              >
+                <i data-lucide="link" class="mr-2"></i> Link / URL
+              </button>
+              <button
+                data-tab="email"
+                class="checker-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 md:px-4 border-b-2 font-medium text-sm md:text-base flex items-center transition-all"
+              >
+                <i data-lucide="mail" class="mr-2"></i> Email
+              </button>
+              <button
+                data-tab="phone"
+                class="checker-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 md:px-4 border-b-2 font-medium text-sm md:text-base flex items-center transition-all"
+              >
+                <i data-lucide="phone" class="mr-2"></i> Số điện thoại
+              </button>
+            </nav>
+          </div>
+
+          <!-- Link/URL Tab Content -->
+          <div id="link-tab-content" class="tab-content">
+            <form id="checker-form" class="mt-6">
+              <div class="relative">
+                <textarea
+                  id="checker-input"
+                  rows="2"
+                  class="w-full p-4 pr-32 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  placeholder="Dán Link / URL vào đây..."
+                ></textarea>
+                <button
+                  type="submit"
+                  id="checker-button"
+                  class="absolute top-1/2 right-3 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center disabled:bg-gray-400"
+                >
+                  <span id="checker-button-text">
+                    <i
+                      data-lucide="search"
+                      class="inline-block mr-2"
+                      style="width: 20px; height: 20px"
+                    ></i>
+                    Kiểm tra
+                  </span>
+                  <span id="checker-button-loading" class="hidden">
+                    <svg
+                      class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Email Tab Content (Hidden by default) -->
+          <div id="email-tab-content" class="tab-content hidden mt-6">
+            <div class="space-y-4">
+              <div>
+                <label
+                  for="from-email"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >Email người gửi</label
+                >
+                <input
+                  type="email"
+                  id="from-email"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="example@domain.com"
+                />
+              </div>
+
+              <div>
+                <label
+                  for="email-subject"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >Tiêu đề email</label
+                >
+                <input
+                  type="text"
+                  id="email-subject"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Tiêu đề email"
+                />
+              </div>
+
+              <div>
+                <label
+                  for="email-content"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >Nội dung email</label
+                >
+                <textarea
+                  id="email-content"
+                  rows="6"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Nội dung email..."
+                ></textarea>
+              </div>
+
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="has-attachment"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label
+                    for="has-attachment"
+                    class="ml-2 block text-sm text-gray-700"
+                    >Có tệp đính kèm</label
+                  >
+                </div>
+
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="suspicious-links"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label
+                    for="suspicious-links"
+                    class="ml-2 block text-sm text-gray-700"
+                    >Có liên kết đáng ngờ</label
+                  >
+                </div>
+              </div>
+
+              <button
+                id="check-email-btn"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Kiểm tra Email
+              </button>
+              <div id="email-result" class="hidden">
+                <div id="result-content" class="">
+                  <h2 id="result-title"></h2>
+                  <p id="result-message"></p>
+                  <ul id="result-indicators"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone Tab Content (Hidden by default) -->
+          <div id="phone-tab-content" class="tab-content hidden mt-6">
+            <div class="relative">
+              <input
+                type="text"
+                id="phone-input"
+                class="w-full p-4 pr-32 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Nhập số điện thoại cần kiểm tra"
+              />
+              <button
+                type="button"
+                id="check-phone-btn"
+                class="absolute top-1/2 right-3 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
+                Kiểm tra
+              </button>
+            </div>
+          </div>
+
+          <div id="checker-result" class="mt-6"></div>
+        </div>
+      </div>
+    </section>
+    <!-- KnowledgeBase Section -->
+    <section id="knowledge" class="py-12 md:py-20 bg-white">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-center text-gray-800">
+          Thư viện Kiến thức An toàn
+        </h2>
+        <p class="mt-4 text-lg text-center text-gray-600 max-w-2xl mx-auto">
+          Trang bị cho mình những kiến thức cần thiết để tự bảo vệ trên không
+          gian mạng.
+        </p>
+        <div class="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div
+            class="bg-gray-50 rounded-lg shadow-md hover:shadow-xl transition-shadow p-6 flex flex-col"
+          >
+            <span
+              class="text-sm font-semibold text-blue-600 bg-blue-100 py-1 px-3 rounded-full self-start"
+              >Email</span
+            >
+            <h3 class="mt-4 text-lg font-bold text-gray-800 flex-grow">
+              Hướng dẫn nhận diện email lừa đảo (phishing)
+            </h3>
+            <p class="mt-2 text-gray-600 text-sm">
+              Các dấu hiệu như sai chính tả, yêu cầu thông tin cá nhân, link
+              lạ...
+            </p>
+            <a
+              href="./html/article.html"
+              data-article="email-phishing"
+              class="mt-4 text-blue-600 font-semibold hover:text-blue-800"
+              >Đọc thêm &rarr;</a
+            >
+          </div>
+          <div
+            class="bg-gray-50 rounded-lg shadow-md hover:shadow-xl transition-shadow p-6 flex flex-col"
+          >
+            <span
+              class="text-sm font-semibold text-blue-600 bg-blue-100 py-1 px-3 rounded-full self-start"
+              >Việc làm</span
+            >
+            <h3 class="mt-4 text-lg font-bold text-gray-800 flex-grow">
+              Cảnh giác với chiêu trò "việc nhẹ lương cao" trên mạng
+            </h3>
+            <p class="mt-2 text-gray-600 text-sm">
+              Không bao giờ chuyển tiền cho nhà tuyển dụng để nhận việc...
+            </p>
+            <a
+              href="./html/job-scam.html"
+              data-article="job-scam"
+              class="mt-4 text-blue-600 font-semibold hover:text-blue-800"
+              >Đọc thêm &rarr;</a
+            >
+          </div>
+          <div
+            class="bg-gray-50 rounded-lg shadow-md hover:shadow-xl transition-shadow p-6 flex flex-col"
+          >
+            <span
+              class="text-sm font-semibold text-blue-600 bg-blue-100 py-1 px-3 rounded-full self-start"
+              >Đầu tư</span
+            >
+            <h3 class="mt-4 text-lg font-bold text-gray-800 flex-grow">
+              Lừa đảo đầu tư tài chính 4.0: Nhận diện và phòng tránh
+            </h3>
+            <p class="mt-2 text-gray-600 text-sm">
+              Các ứng dụng hứa hẹn lợi nhuận phi thực tế thường là cạm bẫy...
+            </p>
+            <a
+              href="./html/investment-scam.html"
+              data-article="investment-scam"
+              class="mt-4 text-blue-600 font-semibold hover:text-blue-800"
+              >Đọc thêm &rarr;</a
+            >
+          </div>
+          <div
+            class="bg-gray-50 rounded-lg shadow-md hover:shadow-xl transition-shadow p-6 flex flex-col"
+          >
+            <span
+              class="text-sm font-semibold text-blue-600 bg-blue-100 py-1 px-3 rounded-full self-start"
+              >Tài khoản</span
+            >
+            <h3 class="mt-4 text-lg font-bold text-gray-800 flex-grow">
+              Cách bảo vệ tài khoản mạng xã hội khỏi bị chiếm đoạt
+            </h3>
+            <p class="mt-2 text-gray-600 text-sm">
+              Bật xác thực hai yếu tố, không nhấp vào link lạ...
+            </p>
+            <a
+              href="./html/social-security.html"
+              data-article="social-security"
+              class="mt-4 text-blue-600 font-semibold hover:text-blue-800"
+              >Đọc thêm &rarr;</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CommunityAlerts Section -->
+    <section id="alerts" class="py-12 md:py-20 bg-blue-50">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-center text-gray-800">
+          Cảnh báo Mới nhất từ Cộng đồng
+        </h2>
+        <p class="mt-4 text-lg text-center text-gray-600 max-w-2xl mx-auto">
+          Luôn cập nhật các chiêu trò lừa đảo đang diễn ra, được báo cáo bởi
+          chính người dùng.
+        </p>
+        <div class="mt-10 max-w-3xl mx-auto space-y-4">
+          <div
+            class="bg-white p-4 rounded-lg shadow-sm flex items-start space-x-4"
+          >
+            <div class="flex-shrink-0 pt-1">
+              <i
+                data-lucide="alert-triangle"
+                class="w-6 h-6 text-yellow-500"
+              ></i>
+            </div>
+            <div>
+              <p class="text-gray-800">
+                Cảnh báo trang web giả mạo Techcombank có giao diện rất giống
+                trang thật.
+              </p>
+              <p class="text-xs text-gray-500 mt-1">2 giờ trước</p>
+            </div>
+          </div>
+          <div
+            class="bg-white p-4 rounded-lg shadow-sm flex items-start space-x-4"
+          >
+            <div class="flex-shrink-0 pt-1">
+              <i
+                data-lucide="alert-triangle"
+                class="w-6 h-6 text-yellow-500"
+              ></i>
+            </div>
+            <div>
+              <p class="text-gray-800">
+                Nhiều người nhận được SMS từ đầu số lạ thông báo trúng thưởng xe
+                máy.
+              </p>
+              <p class="text-xs text-gray-500 mt-1">5 giờ trước</p>
+            </div>
+          </div>
+        </div>
+        <div id="report" class="text-center mt-8">
+          <button
+            class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+          >
+            Báo cáo Lừa đảo Ngay
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!--knowledge-expanded  -->
+    <section id="knowledge-expanded" class="py-12 md:py-20 bg-gray-50">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">
+          Kiến thức Phòng chống Lừa đảo
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Category 1: Email Scams -->
+          <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-5 bg-blue-600">
+              <h3 class="text-xl font-bold text-white">Lừa đảo qua Email</h3>
+            </div>
+            <div class="p-6">
+              <ul class="space-y-3">
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Nhận diện email giả mạo ngân hàng</span>
+                </li>
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Phát hiện email chứa mã độc</span>
+                </li>
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Cách xử lý khi nhận email lừa đảo</span>
+                </li>
+              </ul>
+              <a
+                href="#"
+                class="mt-4 inline-flex items-center text-blue-600 font-medium hover:text-blue-800"
+              >
+                Xem chi tiết
+                <i data-lucide="arrow-right" class="ml-1 w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Category 2: Website Scams -->
+          <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-5 bg-red-600">
+              <h3 class="text-xl font-bold text-white">Website Giả mạo</h3>
+            </div>
+            <div class="p-6">
+              <ul class="space-y-3">
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Nhận biết website ngân hàng giả</span>
+                </li>
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Kiểm tra SSL/TLS của website</span>
+                </li>
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Cảnh giác với website khuyến mãi giả</span>
+                </li>
+              </ul>
+              <a
+                href="#"
+                class="mt-4 inline-flex items-center text-blue-600 font-medium hover:text-blue-800"
+              >
+                Xem chi tiết
+                <i data-lucide="arrow-right" class="ml-1 w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Category 3: Social Media Scams -->
+          <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-5 bg-purple-600">
+              <h3 class="text-xl font-bold text-white">Mạng Xã hội</h3>
+            </div>
+            <div class="p-6">
+              <ul class="space-y-3">
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Lừa đảo qua tin nhắn Facebook</span>
+                </li>
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Tài khoản giả mạo người nổi tiếng</span>
+                </li>
+                <li class="flex items-start">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-5 h-5 text-green-500 mt-1 mr-2 flex-shrink-0"
+                  ></i>
+                  <span>Chiêu trò "việc nhẹ lương cao"</span>
+                </li>
+              </ul>
+              <a
+                href="#"
+                class="mt-4 inline-flex items-center text-blue-600 font-medium hover:text-blue-800"
+              >
+                Xem chi tiết
+                <i data-lucide="arrow-right" class="ml-1 w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- quiz -->
+    <section
+      id="quiz"
+      class="py-12 md:py-20 bg-gradient-to-r from-blue-50 to-indigo-50"
+    >
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto text-center">
+          <h2 class="text-3xl font-bold text-gray-800 mb-4">
+            Kiểm tra Kiến thức Phòng chống Lừa đảo
+          </h2>
+          <p class="text-lg text-gray-600 mb-8">
+            Trả lời 5 câu hỏi ngắn để đánh giá hiểu biết của bạn về các hình
+            thức lừa đảo trực tuyến
+          </p>
+
+          <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <div id="quiz-progress" class="mb-6">
+              <div class="flex justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700"
+                  >Tiến độ: <span id="current-question">1</span>/5</span
+                >
+                <span class="text-sm font-medium text-gray-700"
+                  >Điểm: <span id="quiz-score">0</span>/5</span
+                >
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  id="progress-bar"
+                  class="bg-blue-600 h-2.5 rounded-full"
+                  style="width: 20%"
+                ></div>
+              </div>
+            </div>
+
+            <div id="quiz-container">
+              <div id="question-1" class="quiz-question">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                  1. Khi nhận được email từ ngân hàng yêu cầu cập nhật thông tin
+                  cá nhân, bạn nên làm gì?
+                </h3>
+                <div class="space-y-3">
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q1" value="a" class="mt-1 mr-3" />
+                    <span>Nhấp vào link trong email và điền thông tin</span>
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q1" value="b" class="mt-1 mr-3" />
+                    <span
+                      >Gọi ngân hàng qua số điện thoại chính thức để xác
+                      nhận</span
+                    >
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q1" value="c" class="mt-1 mr-3" />
+                    <span>Chuyển tiếp email cho bạn bè để hỏi ý kiến</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Question 2 -->
+              <div id="question-2" class="quiz-question hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                  2. Website giả mạo thường có đặc điểm nào?
+                </h3>
+                <div class="space-y-3">
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q2" value="a" class="mt-1 mr-3" />
+                    <span>URL dài và chứa nhiều ký tự lạ</span>
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q2" value="b" class="mt-1 mr-3" />
+                    <span>Chứng chỉ SSL hợp lệ</span>
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q2" value="c" class="mt-1 mr-3" />
+                    <span>Thiết kế hiện đại, rõ ràng</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Question 3 -->
+              <div id="question-3" class="quiz-question hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                  3. Khi thấy tài khoản Facebook người nổi tiếng nhắn tin vay
+                  tiền, bạn nên?
+                </h3>
+                <div class="space-y-3">
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q3" value="a" class="mt-1 mr-3" />
+                    <span>Chuyển tiền ngay vì tin tưởng</span>
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q3" value="b" class="mt-1 mr-3" />
+                    <span
+                      >Kiểm chứng bằng gọi trực tiếp hoặc hỏi người quen</span
+                    >
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q3" value="c" class="mt-1 mr-3" />
+                    <span>Bỏ qua và không báo cáo</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Question 4 -->
+              <div id="question-4" class="quiz-question hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                  4. Một dấu hiệu email lừa đảo phổ biến là gì?
+                </h3>
+                <div class="space-y-3">
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q4" value="a" class="mt-1 mr-3" />
+                    <span>Sai chính tả và lỗi ngữ pháp nhiều</span>
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q4" value="b" class="mt-1 mr-3" />
+                    <span>Dùng logo chính hãng rõ nét</span>
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q4" value="c" class="mt-1 mr-3" />
+                    <span>Ngôn ngữ chuyên nghiệp</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Question 5 -->
+              <div id="question-5" class="quiz-question hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                  5. Khi phát hiện trang web lừa đảo, bạn nên làm gì?
+                </h3>
+                <div class="space-y-3">
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q5" value="a" class="mt-1 mr-3" />
+                    <span>Bỏ qua, không cần quan tâm</span>
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q5" value="b" class="mt-1 mr-3" />
+                    <span>Báo cáo với cơ quan chức năng hoặc quản trị</span>
+                  </label>
+                  <label
+                    class="quiz-option flex items-start p-4 border rounded-lg cursor-pointer hover:bg-blue-50"
+                  >
+                    <input type="radio" name="q5" value="c" class="mt-1 mr-3" />
+                    <span>Chia sẻ đường link cho nhiều người biết</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="mt-8 flex justify-between">
+              <button
+                id="quiz-prev"
+                class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors hidden"
+              >
+                <i
+                  data-lucide="chevron-left"
+                  class="inline-block mr-1 w-4 h-4"
+                ></i>
+                Câu trước
+              </button>
+              <button
+                id="quiz-next"
+                class="ml-auto px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Câu tiếp theo
+                <i
+                  data-lucide="chevron-right"
+                  class="inline-block ml-1 w-4 h-4"
+                ></i>
+              </button>
+              <button
+                id="quiz-submit"
+                class="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors hidden"
+              >
+                Xem kết quả
+                <i data-lucide="award" class="inline-block ml-1 w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz Result Modal -->
+    <div
+      id="quiz-result-modal"
+      class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50"
+    >
+      <div
+        class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center relative"
+      >
+        <button
+          title="none"
+          type="button"
+          id="quiz-result-close"
+          class="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">Kết quả của bạn</h3>
+        <p class="text-lg text-gray-600 mb-4">
+          Bạn đã trả lời đúng
+          <span id="quiz-score-result" class="font-semibold text-blue-600"
+            >0</span
+          >/5 câu hỏi.
+        </p>
+        <button
+          id="quiz-retry"
+          class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Làm lại Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-primary to-secondary shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center"></div>
+          <div class="flex space-x-4">
+            <button
+              id="btnHome"
+              class="px-4 py-2 rounded-md text-sm font-medium bg-white text-black hover:bg-opacity-90 transition-all"
+            >
+              Danh sách Email
+            </button>
+            <button
+              id="btnCategory"
+              class="px-4 py-2 rounded-md text-sm font-medium text-black bg-opacity-20 hover:bg-opacity-30 transition-all"
+            >
+              Phân loại
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Trang chủ - Danh sách Email -->
+      <div id="homePage">
+        <!-- Realtime notifications -->
+        <div id="realtime" class="mb-6 bg-white rounded-lg shadow p-4">
+          <!-- Realtime notifications will appear here -->
+        </div>
+
+        <!-- Email List Table -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div
+            class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+          >
+            <h2 class="text-xl font-bold text-black-50">Danh sách Email</h2>
+            <div class="relative">
+              <input
+                type="text"
+                placeholder="Tìm kiếm email..."
+                class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+              <svg
+                class="w-5 h-5 absolute left-3 top-2.5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+            </div>
+          </div>
+
+          <div class="table-wrapper overflow-x-auto max-h-[500px]">
+            <table class="email-table min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+                  >
+                    ID
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Tiêu đề
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64"
+                  >
+                    Người gửi
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48"
+                  >
+                    Thời gian
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="email-list"
+                class="bg-white divide-y divide-gray-200"
+              ></tbody>
+            </table>
+          </div>
+
+          <div id="loading" class="flex justify-center items-center p-6">
+            <!-- <div
+              class="loading-spinner w-8 h-8 border-t-2 border-primary rounded-full"
+            ></div> -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Phân loại -->
+      <div id="categoryPage" class="hidden">
+        <!-- Tab Navigation -->
+        <div class="tabs flex space-x-1 mb-6 p-1 bg-gray-100 rounded-xl">
+          <button
+            class="tab-btn px-6 py-3 rounded-xl text-sm font-medium transition-all flex items-center hover:bg-white"
+            data-tab="safe"
+          >
+            <span
+              class="mr-2 bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+              >Safe</span
+            >
+            <span id="safeCount">0</span>
+          </button>
+          <button
+            class="tab-btn px-6 py-3 rounded-xl text-sm font-medium transition-all flex items-center hover:bg-white"
+            data-tab="junk"
+          >
+            <span
+              class="mr-2 bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+              >Suspicious</span
+            >
+            <span id="junkCount">0</span>
+          </button>
+          <button
+            class="tab-btn px-6 py-3 rounded-xl text-sm font-medium transition-all flex items-center hover:bg-white"
+            data-tab="spam"
+          >
+            <span
+              class="mr-2 bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+              >Spam</span
+            >
+            <span id="spamCount">0</span>
+          </button>
+          <button
+            class="tab-btn px-6 py-3 rounded-xl text-sm font-medium transition-all flex items-center hover:bg-white"
+            data-tab="danger"
+          >
+            <span
+              class="mr-2 bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+              >Phishing</span
+            >
+            <span id="dangerCount">0</span>
+          </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <!-- Safe Tab -->
+          <div class="tab-content" id="safeTab">
+            <div class="overflow-x-auto">
+              <table class="table-fixed min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+                    >
+                      ID
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64"
+                    >
+                      Email
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Tiêu đề
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="safeEmails"
+                  class="bg-white divide-y divide-gray-200"
+                ></tbody>
+              </table>
+            </div>
+            <div
+              class="pagination p-4 flex justify-center items-center space-x-2"
+              id="safePagination"
+            ></div>
+          </div>
+
+          <!-- Junk Tab -->
+          <div class="tab-content hidden" id="junkTab">
+            <div class="overflow-x-auto">
+              <table class="table-fixed min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+                    >
+                      ID
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64"
+                    >
+                      Email
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Tiêu đề
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="junkEmails"
+                  class="bg-white divide-y divide-gray-200"
+                ></tbody>
+              </table>
+            </div>
+            <div
+              class="pagination p-4 flex justify-center items-center space-x-2"
+              id="junkPagination"
+            ></div>
+          </div>
+
+          <!-- Spam Tab -->
+          <div class="tab-content hidden" id="spamTab">
+            <div class="overflow-x-auto">
+              <table class="table-fixed min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+                    >
+                      ID
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64"
+                    >
+                      Email
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Tiêu đề
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="spamEmails"
+                  class="bg-white divide-y divide-gray-200"
+                ></tbody>
+              </table>
+            </div>
+            <div
+              class="pagination p-4 flex justify-center items-center space-x-2"
+              id="spamPagination"
+            ></div>
+          </div>
+
+          <!-- Danger Tab -->
+          <div class="tab-content hidden" id="dangerTab">
+            <div class="overflow-x-auto">
+              <table class="table-fixed min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+                    >
+                      ID
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64"
+                    >
+                      Email
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Tiêu đề
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="dangerEmails"
+                  class="bg-white divide-y divide-gray-200"
+                ></tbody>
+              </table>
+            </div>
+            <div
+              class="pagination p-4 flex justify-center items-center space-x-2"
+              id="dangerPagination"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- chatbot -->
+    <div id="chatbot-container">
+      <button
+        title="none"
+        type="submit"
+        id="chatbot-toggle-button"
+        class="fixed bottom-5 right-5 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-transform hover:scale-110 z-50"
+      >
+        <i data-lucide="message-square" style="width: 28px; height: 28px"></i>
+      </button>
+      <div
+        id="chatbot-window"
+        class="hidden fixed bottom-5 right-5 w-80 h-96 bg-white rounded-lg shadow-2xl flex flex-col z-50"
+      >
+        <div
+          class="p-3 bg-blue-600 text-white flex justify-between items-center rounded-t-lg"
+        >
+          <div class="flex items-center">
+            <i data-lucide="bot" class="mr-2"></i>
+            <h3 class="font-semibold">Trợ lý An Toàn Mạng</h3>
+          </div>
+          <button
+            title="none"
+            type="submit"
+            id="chatbot-close-button"
+            class="text-white hover:text-gray-200"
+          >
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div id="chatbot-messages" class="flex-1 p-3 overflow-y-auto">
+          <div class="message bot-message">
+            <p>
+              Xin chào! Tôi là trợ lý an toàn mạng. Tôi có thể giúp gì cho bạn
+              về các vấn đề lừa đảo trực tuyến?
+            </p>
+          </div>
+        </div>
+        <form id="chatbot-form" class="p-3 border-t border-gray-200 flex">
+          <input
+            type="text"
+            id="chatbot-input"
+            placeholder="Nhập tin nhắn..."
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <button
+            title="none"
+            type="submit"
+            id="chatbot-send-button"
+            class="bg-blue-600 text-white px-4 rounded-r-md hover:bg-blue-700"
+          >
+            <i data-lucide="send"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- footer -->
+    <footer class="mt-[60px] bg-gray-800 text-white">
+      <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-lg font-semibold">AnToanMang.vn</h3>
+            <p class="mt-2 text-sm text-gray-400">
+              Nền tảng giúp người dùng Việt Nam nhận diện, phòng tránh và báo
+              cáo lừa đảo trực tuyến.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold">Liên kết nhanh</h3>
+            <ul class="mt-2 space-y-1 text-sm">
+              <li>
+                <a href="#checker" class="text-gray-400 hover:text-white"
+                  >Công cụ Kiểm tra</a
+                >
+              </li>
+              <li>
+                <a href="#knowledge" class="text-gray-400 hover:text-white"
+                  >Thư viện Kiến thức</a
+                >
+              </li>
+              <li>
+                <a href="#alerts" class="text-gray-400 hover:text-white"
+                  >Cảnh báo Cộng đồng</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold">Tuyên bố miễn trừ trách nhiệm</h3>
+            <p class="mt-2 text-sm text-gray-400">
+              Các kết quả phân tích chỉ mang tính tham khảo, được cung cấp bởi
+              AI và cộng đồng. Luôn cẩn trọng và tự đưa ra quyết định cuối cùng.
+            </p>
+          </div>
+        </div>
+        <div
+          class="mt-8 border-t border-gray-700 pt-4 text-center text-sm text-gray-500"
+        >
+          <p>
+            &copy; ${new Date().getFullYear()} AnToanMang.vn. All rights
+            reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons();
+    </script>
+    <script src="client.js"></script>
+    <script src="./js/email-checker.js"></script>
+    <script src="main.js"></script>
+    <script src="./js/chatbot.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", setupChatbot);
+    </script>
+  </body>
+</html>
