@@ -96,9 +96,10 @@ const EMAIL_PATTERNS = {
         /nhấn vào đây để hủy đăng ký/i,
       ],
       fromDomainPatterns: [
-        /no-?reply@.*\.(info|online|site)/i,
-        /admin@.*\.(org|net|com)/i,
-        /support@.*\.(net|org)/i,
+        /support@.*(secure|verify|update).*\.com/i,
+        /no[-_]?reply@.*(account|support|login).*\.net/i,
+        /.*@(mail|secure|login|account)[0-9]{1,3}\.(com|xyz|top|tk)/i,
+        /.*@(service|web|update)-(secure|info)\.(online|site)/i,
       ],
     },
   },
@@ -198,7 +199,7 @@ function checkPhishing(title, content, fromEmail, containsSuspiciousLinks) {
       brandPattern.test(title) ||
       brandPattern.test(content)
     ) {
-      indicators.push(`Giả mạo thương hiệu: ${brandPattern}`);
+      indicators.push(`Giả mạo thương hiệu`);
       matchCount += 3;
     }
   });
@@ -211,10 +212,44 @@ function checkPhishing(title, content, fromEmail, containsSuspiciousLinks) {
     }
   });
 
+  // 1. Kiểm tra sự không khớp giữa tên miền và nội dung
+
+  const domainInContent = content.includes(domain);
+  if (!domainInContent) {
+    indicators.push("Tên miền không xuất hiện trong nội dung email");
+    matchCount += 1;
+  }
+
+  // 2. Kiểm tra các liên kết ẩn
+  const hiddenLinks = /<a[^>]*style=[^>]*display:\s*none[^>]*>/i.test(content);
+  if (hiddenLinks) {
+    indicators.push("Phát hiện liên kết ẩn trong email");
+    matchCount += 3;
+  }
+
+  // 3. Kiểm tra yêu cầu thông tin cá nhân
+  const personalInfoRequests =
+    /(mật khẩu|số thẻ|ccv|cvv|ngày sinh|địa chỉ|password|card number|cvv)/i.test(
+      content
+    );
+  if (personalInfoRequests) {
+    indicators.push("Yêu cầu cung cấp thông tin cá nhân nhạy cảm");
+    matchCount += 3;
+  }
+
+  // 4. Kiểm tra lỗi chính tả trong tên thương hiệu
+  const brandTypos = /(g0ogle|micorsoft|payypal|facebok|amaz0n)/i.test(
+    title + content
+  );
+  if (brandTypos) {
+    indicators.push("Phát hiện lỗi chính tả trong tên thương hiệu");
+    matchCount += 2;
+  }
+
   // Kiểm tra tiêu đề
   phishingPatterns["basic"]["titlePatterns"].forEach((pattern) => {
     if (pattern.test(title)) {
-      indicators.push(`Tiêu đề có dấu hiệu phishing cơ bản: ${pattern}`);
+      indicators.push(`Tiêu đề có dấu hiệu phishing`);
       matchCount++;
     }
   });
@@ -285,52 +320,51 @@ function checkSafe(title, content, fromEmail) {
   const indicators = [];
   let safeScore = 0;
 
-  // Check domain (must match at least one)
-  let domainSafe = safePatterns.requiredPatterns.fromDomainPatterns.some(
+  // Domain an toàn: +3 điểm
+  const domainSafe = safePatterns.requiredPatterns.fromDomainPatterns.some(
     (pattern) => pattern.test(fromEmail)
   );
   if (domainSafe) {
-    indicators.push("Domain email thuộc danh sách an toàn.");
-    safeScore++;
+    indicators.push("Domain email thuộc danh sách an toàn");
+    safeScore += 3;
   }
 
-  // Check greetings
-  if (
+  // Lời chào chuyên nghiệp: +1 điểm
+  const hasProfessionalGreeting =
     safePatterns.requiredPatterns.professionalGreetings.some((pattern) =>
       pattern.test(content)
-    )
-  ) {
-    indicators.push("Email có lời chào chuyên nghiệp.");
-    safeScore++;
+    );
+  if (hasProfessionalGreeting) {
+    indicators.push("Email có lời chào chuyên nghiệp");
+    safeScore += 1;
   }
 
-  // Check closings
-  if (
+  // Kết thúc chuyên nghiệp: +1 điểm
+  const hasProfessionalClosing =
     safePatterns.requiredPatterns.professionalClosings.some((pattern) =>
       pattern.test(content)
-    )
-  ) {
-    indicators.push("Email có lời kết chuyên nghiệp.");
-    safeScore++;
+    );
+  if (hasProfessionalClosing) {
+    indicators.push("Email có lời kết chuyên nghiệp");
+    safeScore += 1;
   }
 
-  // Check suspicious words (không được có)
+  // Trừ điểm nếu có từ ngữ đáng ngờ
   const hasSuspiciousWord = safePatterns.mustNotHave.suspiciousWords.some(
-    (pattern) => pattern.test(content)
+    (pattern) => pattern.test(content) || pattern.test(title)
   );
   if (hasSuspiciousWord) {
-    indicators.push("Có chứa từ khóa đáng ngờ -> Không hoàn toàn an toàn.");
+    indicators.push("Có chứa từ khóa đáng ngờ");
     safeScore -= 2;
   }
 
-  const isSafe = safeScore >= 2 && !hasSuspiciousWord;
-  const confidence = Math.min((safeScore / 3) * 0.9, 1.0);
+  const confidence = Math.min(safeScore / 5, 1.0); // Tối đa 5 điểm
 
   return {
-    isSafe: isSafe,
+    isSafe: safeScore >= 2,
     confidence: confidence,
     indicators: [...new Set(indicators)],
-    level: isSafe ? "high" : "low",
+    level: confidence > 0.6 ? "high" : "low",
   };
 }
 
@@ -345,18 +379,41 @@ function checkSpam(title, content, fromEmail) {
   // Basic title patterns
   spamPatterns["basic"]["titlePatterns"].forEach((pattern) => {
     if (pattern.test(title)) {
-      indicators.push(`Tiêu đề có dấu hiệu spam: ${pattern}`);
+      indicators.push(`Tiêu đề có dấu hiệu spam`);
       matchCount++;
     }
   });
 
-  // Basic content patterns
-  spamPatterns["basic"]["contentPatterns"].forEach((pattern) => {
-    if (pattern.test(content)) {
-      indicators.push(`Nội dung có dấu hiệu spam: ${pattern}`);
-      matchCount++;
-    }
+  const spamKeywords = [
+    "giảm giá",
+    "khuyến mãi",
+    "miễn phí",
+    "sale",
+    "deal",
+    "offer",
+    "discount",
+  ];
+  let keywordCount = 0;
+
+  spamKeywords.forEach((keyword) => {
+    const regex = new RegExp(keyword, "gi");
+    const titleMatches = (title.match(regex) || []).length;
+    const contentMatches = (content.match(regex) || []).length;
+    keywordCount += titleMatches + contentMatches;
   });
+
+  if (keywordCount > 3) {
+    indicators.push(`Phát hiện ${keywordCount} từ khóa spam`);
+    matchCount += Math.min(keywordCount, 5); // Tối đa +5 điểm
+  }
+
+  // Kiểm tra sử dụng nhiều dấu chấm than
+  const exclamationCount =
+    (title.match(/!/g) || []).length + (content.match(/!/g) || []).length;
+  if (exclamationCount > 2) {
+    indicators.push(`Sử dụng quá nhiều dấu chấm than (${exclamationCount})`);
+    matchCount += Math.min(exclamationCount, 3); // Tối đa +3 điểm
+  }
 
   // Basic domain patterns
   spamPatterns["basic"]["fromDomainPatterns"].forEach((pattern) => {
@@ -401,6 +458,53 @@ function checkSpam(title, content, fromEmail) {
   };
 }
 
+//5. Thêm hàm checkSuspicious
+function checkSuspicious(title, content, fromEmail) {
+  const patterns = EMAIL_PATTERNS["suspicious"];
+  const indicators = [];
+  let matchCount = 0;
+
+  // Kiểm tra các mẫu cơ bản
+  patterns.basic.titlePatterns.forEach((pattern) => {
+    if (pattern.test(title)) {
+      indicators.push(`Tiêu đề có dấu hiệu đáng ngờ: ${pattern}`);
+      matchCount++;
+    }
+  });
+
+  patterns.basic.contentPatterns.forEach((pattern) => {
+    if (pattern.test(content)) {
+      indicators.push(`Nội dung có dấu hiệu đáng ngờ: ${pattern}`);
+      matchCount++;
+    }
+  });
+
+  // Kiểm tra lỗi chính tả
+  patterns.basic.spellingErrors.forEach((pattern) => {
+    if (pattern.test(title + content)) {
+      indicators.push(`Phát hiện lỗi chính tả: ${pattern}`);
+      matchCount++;
+    }
+  });
+
+  // Kiểm tra các chỉ báo tinh vi
+  patterns.advanced.subtleIndicators.forEach((pattern) => {
+    if (pattern.test(content)) {
+      indicators.push(`Chỉ báo đáng ngờ: ${pattern}`);
+      matchCount += 2;
+    }
+  });
+
+  const confidence = Math.min(matchCount * 0.15, 1.0);
+
+  return {
+    isSuspicious: matchCount > 0,
+    confidence: confidence,
+    indicators: [...new Set(indicators)],
+    level: confidence > 0.4 ? "medium" : "low",
+  };
+}
+
 // (Để ngắn gọn, tôi sẽ không hiển thị toàn bộ ở đây nhưng bạn có thể triển khai tương tự)
 
 // Hàm phân loại email chính
@@ -413,53 +517,36 @@ function classifyEmail(emailData) {
     containsSuspiciousLinks,
   } = emailData;
 
-  // 1. Kiểm tra phishing
-  const phishingCheck = checkPhishing(
-    subject,
-    content,
-    fromEmail,
-    containsSuspiciousLinks
-  );
-  if (phishingCheck.isPhishing) {
-    return {
-      category: "phishing",
-      confidence: phishingCheck.confidence,
-      indicators: phishingCheck.indicators,
-      level: phishingCheck.level,
-    };
-  }
-
-  // 2. Kiểm tra spam
-  const spamCheck = checkSpam(subject, content, fromEmail);
-  if (spamCheck.isSpam) {
-    return {
-      category: "spam",
-      confidence: spamCheck.confidence,
-      indicators: spamCheck.indicators,
-      level: spamCheck.level,
-    };
-  }
-
-  // 3. Kiểm tra safe
-  const safeCheck = checkSafe(subject, content, fromEmail);
-  if (safeCheck.isSafe) {
-    return {
-      category: "safe",
-      confidence: safeCheck.confidence,
-      indicators: safeCheck.indicators,
-      level: safeCheck.level,
-    };
-  }
-
-  // 4. Nếu không khớp -> suspicious
-  return {
-    category: "suspicious",
-    confidence: 0.2,
-    indicators: [
-      "Email không khớp với bất kỳ mẫu phân loại nào, cần kiểm tra thủ công.",
-    ],
-    level: "unknown",
+  // Kiểm tra tất cả các loại
+  const results = {
+    phishing: checkPhishing(
+      subject,
+      content,
+      fromEmail,
+      containsSuspiciousLinks
+    ),
+    spam: checkSpam(subject, content, fromEmail),
+    safe: checkSafe(subject, content, fromEmail),
+    suspicious: checkSuspicious(subject, content, fromEmail),
   };
+
+  // Tìm kết quả có độ tin cậy cao nhất
+  let maxConfidence = 0;
+  let finalResult = results.suspicious;
+
+  for (const [category, result] of Object.entries(results)) {
+    if (result.confidence > maxConfidence) {
+      maxConfidence = result.confidence;
+      finalResult = result;
+    }
+  }
+
+  // Xử lý đặc biệt cho phishing có độ tin cậy cao
+  if (results.phishing.confidence > 0.7) {
+    return results.phishing;
+  }
+
+  return finalResult;
 }
 
 // Hiển thị kết quả kiểm tra
